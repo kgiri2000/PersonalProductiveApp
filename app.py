@@ -4,33 +4,36 @@ import streamlit as st
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-@st.cache_resource
 
+@st.cache_resource
 def authenticate_drive():
     """
-    Authenticate with Google Drive using OAuth2 without saving credentials locally.
+    Authenticate with Google Drive using OAuth2 credentials and Streamlit secrets.
     """
     gauth = GoogleAuth()
 
-    # Use credentials from Streamlit secrets (optional, if using secrets for client_id and client_secret)
+    # Use credentials from Streamlit secrets
     client_id = st.secrets["google_drive"]["client_id"]
     client_secret = st.secrets["google_drive"]["client_secret"]
 
-    # Load the client credentials
+    # Set the client ID and secret for OAuth2
     gauth.ClientId = client_id
     gauth.ClientSecret = client_secret
 
-    if not gauth.credentials:
-        # This will trigger the OAuth flow (authentication prompt in a browser)
-        gauth.LocalWebserverAuth()  # Auth flow starts here
-    elif gauth.access_token_expired:
-        # If the credentials have expired, refresh them
-        gauth.Refresh()
+    # Try loading saved credentials
+    if gauth.LoadCredentialsFile("mycreds.txt"):
+        if gauth.access_token_expired:
+            gauth.Refresh()
+        else:
+            gauth.Authorize()
     else:
-        # If credentials are still valid, authorize them
-        gauth.Authorize()
+        # This will trigger OAuth2 authentication in the browser
+        gauth.LocalWebserverAuth()
 
-    # No need to save credentials to a file, they are only valid for this session
+    # Save the credentials for future use
+    gauth.SaveCredentialsFile("mycreds.txt")
+
+    # Return the authenticated GoogleDrive instance
     return GoogleDrive(gauth)
 
 # Function to create a folder in Google Drive
