@@ -15,12 +15,12 @@ def authenticate_drive():
     # Use credentials from Streamlit secrets
     client_id = st.secrets["google_drive"]["client_id"]
     client_secret = st.secrets["google_drive"]["client_secret"]
-   # access_token = st.secrets["google_drive"]["access_token"]
+   access_token = st.secrets["google_drive"]["access_token"]
 
     # Load credentials from secrets
     gauth.ClientId = client_id
     gauth.ClientSecret = client_secret
-    #gauth.AccessToken = access_token
+    gauth.AccessToken = access_token
 
     if not gauth.credentials:
         gauth.LocalWebserverAuth()  # Authenticate if not saved
